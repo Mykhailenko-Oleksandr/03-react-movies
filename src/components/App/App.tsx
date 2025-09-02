@@ -1,12 +1,12 @@
-// import css from "./App.module.css";
-
 import axios from "axios";
+import toast, { Toaster } from "react-hot-toast";
 import SearchBar from "../SearchBar/SearchBar";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import MovieGrid from "../MovieGrid/MovieGrid";
 import type { Movie } from "../../types/movie";
 import Loader from "../Loader/Loader";
 import ErrorMessage from "../ErrorMessage/ErrorMessage";
+import MovieModal from "../MovieModal/MovieModal";
 
 interface DataHttpResponse {
   page: number;
@@ -15,14 +15,38 @@ interface DataHttpResponse {
   total_results: number;
 }
 
+interface OptionAPI {
+  params: {
+    query: string;
+  };
+  headers: {
+    Authorization: string;
+  };
+}
+
+const url: string = "https://api.themoviedb.org/3/search/movie";
+const notify = () => toast.error("No movies found for your request");
+
+let movieSelected: Movie;
+
 export default function App() {
   const [movies, setMovies] = useState<Movie[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [isError, setIsError] = useState(false);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isError, setIsError] = useState<boolean>(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const openModal = (movie: Movie) => {
+    movieSelected = movie;
+    console.log(movie);
+
+    setIsModalOpen(true);
+  };
+
+  const closeModal = () => setIsModalOpen(false);
 
   async function handleSearch(searchWord: string) {
     try {
-      const options = {
+      const options: OptionAPI = {
         params: {
           query: searchWord,
         },
@@ -30,19 +54,16 @@ export default function App() {
           Authorization: `Bearer ${import.meta.env.VITE_TMDB_TOKEN}`,
         },
       };
+
       setIsError(false);
       setIsLoading(true);
 
-      const resp = await axios.get<DataHttpResponse>(
-        "https://api.themoviedb.org/3/search/movie",
-        options
-      );
-      console.log(resp.data.results);
+      const resp = await axios.get<DataHttpResponse>(url, options);
 
       setMovies(resp.data.results);
 
       if (resp.data.results.length === 0) {
-        alert("No movies found for your request");
+        notify();
       }
     } catch {
       setIsError(true);
@@ -51,27 +72,18 @@ export default function App() {
     }
   }
 
-  function handleSelectFilm() {
-    console.log("ok");
-  }
-
   return (
     <>
       <SearchBar onSubmit={handleSearch} />
       {isLoading ? (
         <Loader />
-      ) : (
-        movies.length && (
-          <MovieGrid onSelect={handleSelectFilm} movies={movies} />
-        )
-      )}
-      {/* {isError ? (
+      ) : isError ? (
         <ErrorMessage />
       ) : (
-        movies.length && (
-          <MovieGrid onSelect={handleSelectFilm} movies={movies} />
-        )
-      )} */}
+        movies.length > 0 && <MovieGrid onSelect={openModal} movies={movies} />
+      )}
+      {isModalOpen && <MovieModal movie={movieSelected} onClose={closeModal} />}
+      <Toaster />;
     </>
   );
 }
