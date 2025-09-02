@@ -10,6 +10,7 @@ const notify = () => toast.error("Please enter your search query");
 export default function SearchBar({ onSubmit }: SearchBarProps) {
   function handleSubmit(formData: FormData) {
     const searchWord = formData.get("query") as string;
+
     if (searchWord.trim() === "") {
       notify();
       return;
