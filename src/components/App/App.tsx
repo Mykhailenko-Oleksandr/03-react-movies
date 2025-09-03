@@ -10,20 +10,19 @@ import { fetchMovies } from "../../services/movieService";
 
 const notify = () => toast.error("No movies found for your request");
 
-let movieSelected: Movie;
-
 export default function App() {
   const [movies, setMovies] = useState<Movie[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isError, setIsError] = useState<boolean>(false);
-  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+  const [movieSelected, setMovieSelected] = useState<Movie | null>(null);
 
   const openModal = (movie: Movie) => {
-    movieSelected = movie;
-    setIsModalOpen(true);
+    setMovieSelected(movie);
   };
 
-  const closeModal = () => setIsModalOpen(false);
+  const closeModal = () => {
+    setMovieSelected(null);
+  };
 
   async function handleSearch(searchWord: string) {
     try {
@@ -53,8 +52,10 @@ export default function App() {
       ) : (
         movies.length > 0 && <MovieGrid onSelect={openModal} movies={movies} />
       )}
-      {isModalOpen && <MovieModal movie={movieSelected} onClose={closeModal} />}
-      <Toaster />;
+      {movieSelected && (
+        <MovieModal movie={movieSelected} onClose={closeModal} />
+      )}
+      <Toaster />
     </>
   );
 }
