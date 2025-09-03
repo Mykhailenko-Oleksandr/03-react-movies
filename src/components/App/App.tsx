@@ -20,8 +20,6 @@ export default function App() {
 
   const openModal = (movie: Movie) => {
     movieSelected = movie;
-    console.log(movie);
-
     setIsModalOpen(true);
   };
 
@@ -45,16 +43,6 @@ export default function App() {
     }
   }
 
-  // const [content, setContent] = useState(null)
-  // let content: JSX.Element | undefined;
-  // if (isLoading) {
-  //   content = <Loader />;
-  // } else if (isError) {
-  //   content = <ErrorMessage />;
-  // } else if (movies.length > 0) {
-  //   content = <MovieGrid onSelect={openModal} movies={movies} />;
-  // }
-
   return (
     <>
       <SearchBar onSubmit={handleSearch} />
@@ -65,7 +53,6 @@ export default function App() {
       ) : (
         movies.length > 0 && <MovieGrid onSelect={openModal} movies={movies} />
       )}
-      {/* {content} */}
       {isModalOpen && <MovieModal movie={movieSelected} onClose={closeModal} />}
       <Toaster />;
     </>
